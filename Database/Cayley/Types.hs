@@ -8,19 +8,30 @@ import Control.Monad
 import qualified Data.Text as T
 import Network.HTTP.Client (Manager)
 
-data CayleyConfig = CayleyConfig
-    { serverPort :: Int    -- ^ Default to 64210
-    , serverName :: String -- ^ Default to "localhost"
-    , apiVersion :: String -- ^ Default to "1"
-    , queryLang  :: String -- ^ Default to "gremlin"
-    } deriving (Eq,Show)
+data APIVersion = V1
 
--- | CayleyConfig { serverPort = 64210 , serverName = "localhost" , apiVersion = "1" , queryLang  = "gremlin" }
+instance Show APIVersion where
+    show V1 = "1"
+
+data QueryLang = Gremlin | MQL
+
+instance Show QueryLang where
+    show Gremlin = "gremlin"
+    show MQL     = "mql"
+
+data CayleyConfig = CayleyConfig
+    { serverPort :: Int
+    , serverName :: String
+    , apiVersion :: APIVersion
+    , queryLang  :: QueryLang
+    } deriving (Show)
+
+-- | CayleyConfig { serverPort = 64210 , serverName = "localhost" , apiVersion = V1 , queryLang  = Gremlin }
 defaultCayleyConfig = CayleyConfig
     { serverPort = 64210
     , serverName = "localhost"
-    , apiVersion = "1"
-    , queryLang  = "gremlin"
+    , apiVersion = V1
+    , queryLang  = Gremlin
     }
 
 data CayleyConnection = CayleyConnection (CayleyConfig,Manager)

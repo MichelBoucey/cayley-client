@@ -49,7 +49,8 @@ query c q =
         c <- ask
         r <- apiRequest
                  m ("http://" ++ serverName c ++ "/api/v" ++
-                    apiVersion c ++ "/query/" ++ queryLang c)
+                    show (apiVersion c) ++ "/query/"
+                    ++ show (queryLang c))
                  (serverPort c) (RequestBodyBS q)
         case r of
             Just a  ->
@@ -100,8 +101,9 @@ writeQuads c qs =
     write m qs = do
         c <- ask
         apiRequest
-            m ("http://" ++ serverName c ++
-               "/api/v" ++ apiVersion c ++ "/write")
+            m ("http://" ++ serverName c
+               ++ "/api/v" ++ show (apiVersion c)
+               ++ "/write")
             (serverPort c) (toRequestBody qs)
 
 -- | Delete the given list of 'Quad'(s).
@@ -112,8 +114,9 @@ deleteQuads c qs =
     delete m qs = do
         c <- ask
         apiRequest
-            m ("http://" ++ serverName c ++
-               "/api/v" ++ apiVersion c ++ "/delete")
+            m ("http://" ++ serverName c
+               ++ "/api/v" ++ show (apiVersion c)
+               ++ "/delete")
             (serverPort c)
             (toRequestBody qs)
 
@@ -123,8 +126,9 @@ writeNQuadFile c p =
   where
     writenq m p = do
         c <- ask
-        r <- parseUrl ("http://" ++ serverName c ++ "/api/v"
-                       ++ apiVersion c ++ "/write/file/nquad")
+        r <- parseUrl ("http://" ++ serverName c
+                       ++ "/api/v" ++ show (apiVersion c)
+                       ++ "/write/file/nquad")
                  >>= \r -> return r { port = serverPort c}
         t <- liftIO $
                  try $
