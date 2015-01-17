@@ -3,7 +3,7 @@ version:             0.1.1.0
 stability:           Experimental
 synopsis:            An Haskell client for Cayley graph database
 description:         cayley-client implements the RESTful API of the Cayley database graph.
-homepage:            http://mb.cybervisible.fr/cayley-client-for-haskell
+homepage:            https://github.com/MichelBoucey/cayley-client
 license:             BSD3
 license-file:        LICENSE
 author:              Michel Boucey
@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 Source-Repository head
   Type: git
-  Location: https://github.com/MichelBoucey/cayley-client
+  Location: https://github.com/MichelBoucey/cayley-client.git
 
 library
   exposed-modules:     Database.Cayley.Client, Database.Cayley.Types, Database.Cayley.Internal
