@@ -148,14 +148,27 @@ writeNQuadFile c p =
 -- >λ> writeNQuadFile conn "testdata.nq" >>= successfulResults
 -- >Right 9
 --
-successfulResults :: Maybe A.Value -> IO (Either String Int)
-successfulResults v =
-    case A.fromJSON (fromJust $ fromJust v ^? key "result") of
-        A.Success s ->
-            case AT.parse getAmount s of
-                AT.Done "" a -> return $ Right a
-                _ -> return $ Left "Can't get amount of successful results"
-        A.Error e -> return $ Left e
+-- successfulResults :: Maybe A.Value -> IO (Either String Int)
+successfulResults m =
+    case m of
+        Just a  ->
+            case a ^? key "result" of
+                Just v  ->
+                    case A.fromJSON v of
+                        A.Success s ->
+                            case AT.parse getAmount s of
+                               AT.Done "" a -> return $ Right a
+                               _ -> return $
+                                   Left "Can't get amount of successful results"
+                        A.Error e -> return $ Left e
+                Nothing ->
+                    case a ^? key "error" of
+                        Just e  ->
+                            case A.fromJSON e of
+                                A.Success s -> return $ Left s
+                                A.Error e   -> return $ Left e
+                        Nothing -> return $ Left "No JSON response from Cayley"
+        Nothing -> return $ Left "Can't get any response from Cayley"
   where
     getAmount = do
         AT.string "Successfully "
