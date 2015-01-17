@@ -62,8 +62,8 @@ query c q =
                               case A.fromJSON e of
                                   A.Success s -> return $ Left s
                                   A.Error e   -> return $ Left e
-                          Nothing ->
-                              return $ Left "No JSON response from Cayley"
+                          Nothing -> return $
+                              Left "No JSON response from Cayley"
             Nothing -> return $ Left "Can't get any response from Cayley"
 
 -- | Write a 'Quad' with the given subject, predicate, object and optional
@@ -148,8 +148,8 @@ writeNQuadFile c p =
 -- >λ> writeNQuadFile conn "testdata.nq" >>= successfulResults
 -- >Right 9
 --
--- successfulResults :: Maybe A.Value -> IO (Either String Int)
-successfulResults m =
+successfulResults :: Maybe A.Value -> IO (Either String Int)
+successfulResults m = return $
     case m of
         Just a  ->
             case a ^? key "result" of
@@ -157,18 +157,17 @@ successfulResults m =
                     case A.fromJSON v of
                         A.Success s ->
                             case AT.parse getAmount s of
-                               AT.Done "" a -> return $ Right a
-                               _ -> return $
-                                   Left "Can't get amount of successful results"
-                        A.Error e -> return $ Left e
+                               AT.Done "" a -> Right a
+                               _ -> Left "Can't get amount of successful results"
+                        A.Error e -> Left e
                 Nothing ->
                     case a ^? key "error" of
                         Just e  ->
                             case A.fromJSON e of
-                                A.Success s -> return $ Left s
-                                A.Error e   -> return $ Left e
-                        Nothing -> return $ Left "No JSON response from Cayley"
-        Nothing -> return $ Left "Can't get any response from Cayley"
+                                A.Success s -> Left s
+                                A.Error e   -> Left e
+                        Nothing -> Left "No JSON response from Cayley"
+        Nothing -> Left "Can't get any response from Cayley"
   where
     getAmount = do
         AT.string "Successfully "
