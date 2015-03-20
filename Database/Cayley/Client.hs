@@ -1,14 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Database.Cayley.Client
-    ( defaultCayleyConfig
+module Database.Cayley.Client (
+    -- * Connect & query
+      defaultCayleyConfig
     , connectCayley
     , query
+    -- * REST API operations
+    , Quad (..)
     , writeQuad
     , deleteQuad
     , writeQuads
     , deleteQuads
     , writeNQuadFile
+    -- * Helper function
     , successfulResults
     ) where
  
@@ -48,23 +52,26 @@ query c q =
     doQuery m q = do
         c <- ask
         r <- apiRequest
-                 m ("http://" ++ serverName c ++ "/api/v" ++
-                    show (apiVersion c) ++ "/query/"
+                 m ("http://"
+                    ++ serverName c
+                    ++ "/api/v"
+                    ++ show (apiVersion c)
+                    ++ "/query/"
                     ++ show (queryLang c))
                  (serverPort c) (RequestBodyBS q)
-        case r of
+        return $ case r of
             Just a  ->
                 case a ^? key "result" of
-                    Just v  -> return $ Right v
+                    Just v  -> Right v
                     Nothing ->
                       case a ^? key "error" of
                           Just e  ->
                               case A.fromJSON e of
-                                  A.Success s -> return $ Left s
-                                  A.Error e   -> return $ Left e
-                          Nothing -> return $
+                                  A.Success s -> Left s
+                                  A.Error e   -> Left e
+                          Nothing ->
                               Left "No JSON response from Cayley"
-            Nothing -> return $ Left "Can't get any response from Cayley"
+            Nothing -> Left "Can't get any response from Cayley"
 
 -- | Write a 'Quad' with the given subject, predicate, object and optional
 -- label. Throw result or extract amount of query 'successfulResults'
@@ -85,10 +92,10 @@ writeQuad c s p o l =
 -- | Delete the 'Quad' defined by the given subject, predicate, object
 -- and optional label.
 deleteQuad :: CayleyConnection
-           -> T.Text
-           -> T.Text
-           -> T.Text
-           -> Maybe T.Text
+           -> T.Text             -- ^ Subject node
+           -> T.Text             -- ^ Predicate node
+           -> T.Text             -- ^ Object node
+           -> Maybe T.Text       -- ^ Label node
            -> IO (Maybe A.Value)
 deleteQuad c s p o l =
     deleteQuads c [Quad { subject = s, predicate = p, object = o, label = l }]
@@ -101,8 +108,10 @@ writeQuads c qs =
     write m qs = do
         c <- ask
         apiRequest
-            m ("http://" ++ serverName c
-               ++ "/api/v" ++ show (apiVersion c)
+            m ("http://"
+               ++ serverName c
+               ++ "/api/v"
+               ++ show (apiVersion c)
                ++ "/write")
             (serverPort c) (toRequestBody qs)
 
@@ -114,8 +123,10 @@ deleteQuads c qs =
     delete m qs = do
         c <- ask
         apiRequest
-            m ("http://" ++ serverName c
-               ++ "/api/v" ++ show (apiVersion c)
+            m ("http://"
+               ++ serverName c
+               ++ "/api/v"
+               ++ show (apiVersion c)
                ++ "/delete")
             (serverPort c)
             (toRequestBody qs)
@@ -126,21 +137,20 @@ writeNQuadFile c p =
   where
     writenq m p = do
         c <- ask
-        r <- parseUrl ("http://" ++ serverName c
-                       ++ "/api/v" ++ show (apiVersion c)
+        r <- parseUrl ("http://"
+                       ++ serverName c
+                       ++ "/api/v"
+                       ++ show (apiVersion c)
                        ++ "/write/file/nquad")
                  >>= \r -> return r { port = serverPort c}
         t <- liftIO $
                  try $
                     flip httpLbs m
                         =<< formDataBody [partFileSource "NQuadFile" p] r
-        case t of
-            Right r -> return $ A.decode $ responseBody r
-            Left e  ->
-                return $
-                    Just $
-                        A.object
-                            ["error" A..= T.pack (show (e :: SomeException))]
+        return $ case t of
+            Right r -> A.decode $ responseBody r
+            Left e  -> Just $
+                A.object ["error" A..= T.pack (show (e :: SomeException))]
 
 -- | Get amount of successful results from a write/delete 'Quad'(s)
 -- operation.
@@ -157,8 +167,9 @@ successfulResults m = return $
                     case A.fromJSON v of
                         A.Success s ->
                             case AT.parse getAmount s of
-                               AT.Done "" a -> Right a
-                               _ -> Left "Can't get amount of successful results"
+                                AT.Done "" a -> Right a
+                                _            ->
+                                    Left "Can't get amount of successful results"
                         A.Error e -> Left e
                 Nothing ->
                     case a ^? key "error" of

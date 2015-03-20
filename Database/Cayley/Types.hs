@@ -41,7 +41,24 @@ data Quad = Quad
     , predicate :: T.Text       -- ^ Predicate node
     , object    :: T.Text       -- ^ Object node
     , label     :: Maybe T.Text -- ^ Label node
-    } deriving (Eq,Show)
+    }
+
+instance Show Quad where
+    show (Quad s p o (Just l)) = T.unpack s
+                                 ++ " "
+                                 ++ T.unpack p
+                                 ++ " "
+                                 ++ T.unpack o
+                                 ++ " ("
+                                 ++ T.unpack l
+                                 ++ ")"
+    show (Quad s p o Nothing)  = T.unpack s
+                                 ++ " "
+                                 ++ T.unpack p
+                                 ++ " "
+                                 ++ T.unpack o
+instance Eq Quad where
+    Quad s p o _ == Quad s' p' o' _ = s == s' && p == p' && o == o'
 
 instance A.ToJSON Quad where
     toJSON (Quad subject predicate object label) =

@@ -12,7 +12,11 @@ import Network.HTTP.Client
 
 import Database.Cayley.Types
 
-apiRequest :: Manager -> String -> Int -> RequestBody -> ReaderT CayleyConfig IO (Maybe A.Value)
+apiRequest :: Manager
+              -> String
+              -> Int
+              -> RequestBody
+              -> ReaderT CayleyConfig IO (Maybe A.Value)
 apiRequest m u p b = do
     r <- parseUrl u >>= \c ->
              return c { method = "POST", port = p, requestBody = b }
