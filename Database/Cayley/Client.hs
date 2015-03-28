@@ -1,12 +1,12 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings,FlexibleContexts #-}
 
 module Database.Cayley.Client (
+      Quad (..)
     -- * Connect & query
-      defaultCayleyConfig
+    , defaultCayleyConfig
     , connectCayley
     , query
     -- * REST API operations
-    , Quad (..)
     , writeQuad
     , deleteQuad
     , writeQuads
@@ -132,6 +132,9 @@ deleteQuads c qs =
             (toRequestBody qs)
 
 -- | Write a N-Quad file.
+--
+-- >λ> writeNQuadFile conn "testdata.nq" >>= successfulResults
+--
 writeNQuadFile c p =
     runReaderT (writenq (getManager c) p) (getConfig c)
   where
