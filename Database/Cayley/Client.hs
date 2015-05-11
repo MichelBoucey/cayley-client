@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings,FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
 
 module Database.Cayley.Client (
       Quad (..)
@@ -26,11 +26,10 @@ import qualified Data.Attoparsec.Text as AT
 import Data.Maybe (fromJust)
 import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
-import Network.HTTP.Client
-import Network.HTTP.Client.MultipartFormData
-
 import Database.Cayley.Internal
 import Database.Cayley.Types
+import Network.HTTP.Client
+import Network.HTTP.Client.MultipartFormData
 
 -- | Get a connection to Cayley with the given configuration.
 --
@@ -78,7 +77,7 @@ query c q =
 -- from it.
 --
 -- >λ> writeQuad conn "Humphrey" "loves" "Lauren" (Just "In love")
--- >Just (Object (fromList [("result",String "Successfully wrote 1 triples.")]))
+-- >Just (Object (fromList [("result",String "Successfully wrote 1 quads.")]))
 --
 writeQuad :: CayleyConnection
           -> T.Text             -- ^ Subject node
@@ -133,7 +132,8 @@ deleteQuads c qs =
 
 -- | Write a N-Quad file.
 --
--- >λ> writeNQuadFile conn "testdata.nq" >>= successfulResults
+-- >λ> writeNQuadFile conn "testdata.nq"
+-- >Just (Object (fromList [("result",String "Successfully wrote 11 quads.")]))
 --
 writeNQuadFile c p =
     runReaderT (writenq (getManager c) p) (getConfig c)
@@ -159,7 +159,7 @@ writeNQuadFile c p =
 -- operation.
 --
 -- >λ> writeNQuadFile conn "testdata.nq" >>= successfulResults
--- >Right 9
+-- >Right 11
 --
 successfulResults :: Maybe A.Value -> IO (Either String Int)
 successfulResults m = return $
@@ -173,7 +173,7 @@ successfulResults m = return $
                                 AT.Done "" a -> Right a
                                 _            ->
                                     Left "Can't get amount of successful results"
-                        A.Error e -> Left e
+                        A.Error e   -> Left e
                 Nothing ->
                     case a ^? key "error" of
                         Just e  ->
@@ -187,5 +187,5 @@ successfulResults m = return $
         AT.string "Successfully "
         AT.string "deleted " <|> AT.string "wrote "
         a <- AT.decimal
-        AT.string " triples."
+        AT.string " quads."
         return a
