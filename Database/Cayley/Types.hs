@@ -57,8 +57,10 @@ instance Show Quad where
                                  ++ T.unpack p
                                  ++ " "
                                  ++ T.unpack o
+
+-- | Two quads are equals when subject, predicate, object /and/ label are equals.
 instance Eq Quad where
-    Quad s p o _ == Quad s' p' o' _ = s == s' && p == p' && o == o'
+    Quad s p o l == Quad s' p' o' l' = s == s' && p == p' && o == o' && l == l'
 
 instance A.ToJSON Quad where
     toJSON (Quad subject predicate object label) =
