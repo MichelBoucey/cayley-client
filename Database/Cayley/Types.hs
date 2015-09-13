@@ -45,17 +45,17 @@ data Quad = Quad
 
 instance Show Quad where
     show (Quad s p o (Just l)) = T.unpack s
-                                 ++ " "
+                                 ++ " -- "
                                  ++ T.unpack p
-                                 ++ " "
+                                 ++ " -> "
                                  ++ T.unpack o
                                  ++ " ("
                                  ++ T.unpack l
                                  ++ ")"
     show (Quad s p o Nothing)  = T.unpack s
-                                 ++ " "
+                                 ++ " -- "
                                  ++ T.unpack p
-                                 ++ " "
+                                 ++ " -> "
                                  ++ T.unpack o
 
 -- | Two quads are equals when subject, predicate, object /and/ label are equals.
