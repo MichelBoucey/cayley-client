@@ -13,6 +13,7 @@ module Database.Cayley.Client (
     , deleteQuads
     , writeNQuadFile
     -- * Helper function
+    , isValid
     , successfulResults
     ) where
  
@@ -154,6 +155,10 @@ writeNQuadFile c p =
             Right r -> A.decode $ responseBody r
             Left e  -> Just $
                 A.object ["error" A..= T.pack (show (e :: SomeException))]
+
+-- | A valid 'Quad' has its subject, predicate and object not empty.
+isValid :: Quad -> Bool
+isValid q = all (/=T.empty) [subject q, predicate q, object q]
 
 -- | Get amount of successful results from a write/delete 'Quad'(s)
 -- operation.
