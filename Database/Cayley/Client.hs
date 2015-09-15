@@ -12,8 +12,9 @@ module Database.Cayley.Client (
     , writeQuads
     , deleteQuads
     , writeNQuadFile
-    -- * Helper function
+    -- * Utils
     , isValid
+    , createQuad
     , successfulResults
     ) where
  
@@ -27,10 +28,11 @@ import qualified Data.Attoparsec.Text as AT
 import Data.Maybe (fromJust)
 import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
-import Database.Cayley.Internal
-import Database.Cayley.Types
 import Network.HTTP.Client
 import Network.HTTP.Client.MultipartFormData
+
+import Database.Cayley.Internal
+import Database.Cayley.Types
 
 -- | Get a connection to Cayley with the given configuration.
 --
@@ -158,7 +160,15 @@ writeNQuadFile c p =
 
 -- | A valid 'Quad' has its subject, predicate and object not empty.
 isValid :: Quad -> Bool
-isValid q = all (/=T.empty) [subject q, predicate q, object q]
+isValid q = T.empty `notElem` [subject q, predicate q, object q]
+
+-- | Given a subject, a predicate, an object and an optional label,
+-- create a valid 'Quad'.
+createQuad :: T.Text -> T.Text -> T.Text -> Maybe T.Text -> Maybe Quad
+createQuad s p o l =
+    if T.empty `notElem` [s,p,o]
+        then Just Quad { subject = s, predicate = p, object = o, label = l }
+        else Nothing
 
 -- | Get amount of successful results from a write/delete 'Quad'(s)
 -- operation.
