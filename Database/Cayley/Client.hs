@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings, FlexibleContexts, RecordWildCards #-}
 
 module Database.Cayley.Client (
       Quad (..)
@@ -52,15 +52,15 @@ query c q =
     runReaderT (doQuery (getManager c) (encodeUtf8 q)) (getConfig c)
   where
     doQuery m q = do
-        c <- ask
+        CayleyConfig {..} <- ask
         r <- apiRequest
                  m ("http://"
-                    ++ serverName c
+                    ++ serverName
                     ++ "/api/v"
-                    ++ show (apiVersion c)
+                    ++ show apiVersion
                     ++ "/query/"
-                    ++ show (queryLang c))
-                 (serverPort c) (RequestBodyBS q)
+                    ++ show queryLang)
+                 serverPort (RequestBodyBS q)
         return $ case r of
             Just a  ->
                 case a ^? key "result" of
@@ -108,14 +108,14 @@ writeQuads c qs =
     runReaderT (write (getManager c) qs) (getConfig c)
   where
     write m qs = do
-        c <- ask
+        CayleyConfig {..} <- ask
         apiRequest
             m ("http://"
-               ++ serverName c
+               ++ serverName
                ++ "/api/v"
-               ++ show (apiVersion c)
+               ++ show apiVersion
                ++ "/write")
-            (serverPort c) (toRequestBody qs)
+            serverPort (toRequestBody qs)
 
 -- | Delete the given list of 'Quad'(s).
 deleteQuads :: CayleyConnection -> [Quad] -> IO (Maybe A.Value)
@@ -123,14 +123,14 @@ deleteQuads c qs =
     runReaderT (delete (getManager c) qs) (getConfig c)
   where
     delete m qs = do
-        c <- ask
+        CayleyConfig {..} <- ask
         apiRequest
             m ("http://"
-               ++ serverName c
+               ++ serverName
                ++ "/api/v"
-               ++ show (apiVersion c)
+               ++ show apiVersion
                ++ "/delete")
-            (serverPort c)
+            serverPort
             (toRequestBody qs)
 
 -- | Write a N-Quad file.
@@ -142,13 +142,13 @@ writeNQuadFile c p =
     runReaderT (writenq (getManager c) p) (getConfig c)
   where
     writenq m p = do
-        c <- ask
+        CayleyConfig {..} <- ask
         r <- parseUrl ("http://"
-                       ++ serverName c
+                       ++ serverName
                        ++ "/api/v"
-                       ++ show (apiVersion c)
+                       ++ show apiVersion
                        ++ "/write/file/nquad")
-                 >>= \r -> return r { port = serverPort c}
+                 >>= \r -> return r { port = serverPort }
         t <- liftIO $
                  try $
                     flip httpLbs m
@@ -160,11 +160,15 @@ writeNQuadFile c p =
 
 -- | A valid 'Quad' has its subject, predicate and object not empty.
 isValid :: Quad -> Bool
-isValid q = T.empty `notElem` [subject q, predicate q, object q]
+isValid Quad {..} = T.empty `notElem` [subject, predicate, object]
 
 -- | Given a subject, a predicate, an object and an optional label,
 -- create a valid 'Quad'.
-createQuad :: T.Text -> T.Text -> T.Text -> Maybe T.Text -> Maybe Quad
+createQuad :: T.Text             -- ^ Subject node
+           -> T.Text             -- ^ Predicate node
+           -> T.Text             -- ^ Object node
+           -> Maybe T.Text       -- ^ Label node
+           -> Maybe Quad
 createQuad s p o l =
     if T.empty `notElem` [s,p,o]
         then Just Quad { subject = s, predicate = p, object = o, label = l }
