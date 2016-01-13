@@ -7,14 +7,16 @@ module Database.Cayley.Client (
     , connectCayley
     , query
     -- * REST API operations
+    , write
     , writeQuad
-    , deleteQuad
     , writeQuads
-    , deleteQuads
     , writeNQuadFile
+    , delete
+    , deleteQuad
+    , deleteQuads
     -- * Utils
-    , isValid
     , createQuad
+    , isValid
     , successfulResults
     ) where
  
@@ -72,8 +74,8 @@ query c q =
                                   A.Success s -> Left s
                                   A.Error e   -> Left e
                           Nothing ->
-                              Left "No JSON response from Cayley"
-            Nothing -> Left "Can't get any response from Cayley"
+                              Left "No JSON response from Cayley server"
+            Nothing -> Left "Can't get any response from Cayley server"
 
 -- | Write a 'Quad' with the given subject, predicate, object and optional
 -- label. Throw result or extract amount of query 'successfulResults'
@@ -91,6 +93,10 @@ writeQuad :: CayleyConnection
 writeQuad c s p o l =
    writeQuads c [Quad { subject = s, predicate = p, object = o, label = l }]
 
+-- | Write an already created 'Quad'.
+write :: CayleyConnection -> Quad -> IO (Maybe A.Value)
+write c q = writeQuads c [q]
+
 -- | Delete the 'Quad' defined by the given subject, predicate, object
 -- and optional label.
 deleteQuad :: CayleyConnection
@@ -101,6 +107,10 @@ deleteQuad :: CayleyConnection
            -> IO (Maybe A.Value)
 deleteQuad c s p o l =
     deleteQuads c [Quad { subject = s, predicate = p, object = o, label = l }]
+
+-- | Delete an already created 'Quad'.
+delete :: CayleyConnection -> Quad -> IO (Maybe A.Value)
+delete c q = deleteQuads c [q]
 
 -- | Write the given list of 'Quad'(s).
 writeQuads :: CayleyConnection -> [Quad] -> IO (Maybe A.Value)
@@ -199,8 +209,8 @@ successfulResults m = return $
                             case A.fromJSON e of
                                 A.Success s -> Left s
                                 A.Error e   -> Left e
-                        Nothing -> Left "No JSON response from Cayley"
-        Nothing -> Left "Can't get any response from Cayley"
+                        Nothing -> Left "No JSON response from Cayley server"
+        Nothing -> Left "Can't get any response from Cayley server"
   where
     getAmount = do
         AT.string "Successfully "
