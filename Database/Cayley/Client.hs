@@ -44,12 +44,12 @@ connectCayley :: CayleyConfig -> IO CayleyConnection
 connectCayley c =
     newManager defaultManagerSettings >>= \m -> return $ CayleyConnection (c,m)
 
--- | Perform a query in Gremlin graph query language per default (or in MQL).
+-- | Perform a query, in Gremlin graph query language per default (or in MQL).
 --
 -- >λ> query conn "graph.Vertex('Humphrey Bogart').In('name').All()"
 -- >Right (Array (fromList [Object (fromList [("id",String "/en/humphrey_bogart")])]))
 --
-query :: CayleyConnection -> T.Text -> IO (Either String A.Value)
+query :: CayleyConnection -> Query -> IO (Either String A.Value)
 query c q =
     runReaderT (doQuery (getManager c) (encodeUtf8 q)) (getConfig c)
   where
@@ -84,31 +84,21 @@ query c q =
 -- >λ> writeQuad conn "Humphrey" "loves" "Lauren" (Just "In love")
 -- >Just (Object (fromList [("result",String "Successfully wrote 1 quads.")]))
 --
-writeQuad :: CayleyConnection
-          -> T.Text             -- ^ Subject node
-          -> T.Text             -- ^ Predicate node
-          -> T.Text             -- ^ Object node
-          -> Maybe T.Text       -- ^ Label node
-          -> IO (Maybe A.Value)
+writeQuad :: CayleyConnection -> Subject -> Predicate -> Object -> Maybe Label -> IO (Maybe A.Value)
 writeQuad c s p o l =
    writeQuads c [Quad { subject = s, predicate = p, object = o, label = l }]
 
--- | Write an already created 'Quad'.
+-- | Write the given 'Quad'.
 write :: CayleyConnection -> Quad -> IO (Maybe A.Value)
 write c q = writeQuads c [q]
 
 -- | Delete the 'Quad' defined by the given subject, predicate, object
 -- and optional label.
-deleteQuad :: CayleyConnection
-           -> T.Text             -- ^ Subject node
-           -> T.Text             -- ^ Predicate node
-           -> T.Text             -- ^ Object node
-           -> Maybe T.Text       -- ^ Label node
-           -> IO (Maybe A.Value)
+deleteQuad :: CayleyConnection -> Subject -> Predicate -> Object -> Maybe Label -> IO (Maybe A.Value)
 deleteQuad c s p o l =
     deleteQuads c [Quad { subject = s, predicate = p, object = o, label = l }]
 
--- | Delete an already created 'Quad'.
+-- | Delete the given 'Quad'.
 delete :: CayleyConnection -> Quad -> IO (Maybe A.Value)
 delete c q = deleteQuads c [q]
 
@@ -174,18 +164,14 @@ isValid Quad {..} = T.empty `notElem` [subject, predicate, object]
 
 -- | Given a subject, a predicate, an object and an optional label,
 -- create a valid 'Quad'.
-createQuad :: T.Text             -- ^ Subject node
-           -> T.Text             -- ^ Predicate node
-           -> T.Text             -- ^ Object node
-           -> Maybe T.Text       -- ^ Label node
-           -> Maybe Quad
+createQuad :: Subject -> Predicate -> Object -> Maybe Label -> Maybe Quad
 createQuad s p o l =
     if T.empty `notElem` [s,p,o]
         then Just Quad { subject = s, predicate = p, object = o, label = l }
         else Nothing
 
 -- | Get amount of successful results from a write/delete 'Quad'(s)
--- operation.
+-- operation, or an explicite error message.
 --
 -- >λ> writeNQuadFile conn "testdata.nq" >>= successfulResults
 -- >Right 11

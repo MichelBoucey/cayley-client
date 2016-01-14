@@ -23,7 +23,7 @@ apiRequest m u p b = do
     t <- liftIO $ try $ httpLbs r m
     case t of
         Right r -> return $ A.decode $ responseBody r
-        Left e  ->
+        Left  e ->
             return $
                 Just $
                     A.object ["error" A..= T.pack (show (e :: SomeException))]
@@ -34,3 +34,4 @@ toRequestBody qs = RequestBodyLBS $ A.encode $ fromList $ map A.toJSON qs
 getManager (CayleyConnection (_,m)) = m
 
 getConfig (CayleyConnection (c,_)) = c
+

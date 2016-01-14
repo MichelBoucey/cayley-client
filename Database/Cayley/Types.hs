@@ -35,7 +35,7 @@ defaultCayleyConfig = CayleyConfig
     }
 
 data CayleyConnection = CayleyConnection (CayleyConfig,Manager)
-     
+
 data Quad = Quad
     { subject   :: T.Text       -- ^ Subject node
     , predicate :: T.Text       -- ^ Predicate node
@@ -77,3 +77,14 @@ instance A.FromJSON Quad where
                              v A..: "object" <*>
                              v A..: "label"
     parseJSON _            = mzero
+     
+type Query = T.Text
+
+type Subject = T.Text
+
+type Predicate = T.Text
+
+type Object = T.Text
+
+type Label = T.Text
+
