@@ -2,11 +2,10 @@
 
 module Database.Cayley.Types where
 
-import qualified Data.Aeson as A
-import Control.Applicative
-import Control.Monad
-import qualified Data.Text as T
-import Network.HTTP.Client (Manager)
+import           Control.Monad
+import qualified Data.Aeson          as A
+import qualified Data.Text           as T
+import           Network.HTTP.Client (Manager)
 
 data APIVersion = V1
 
@@ -27,6 +26,7 @@ data CayleyConfig = CayleyConfig
     } deriving (Show)
 
 -- | CayleyConfig { serverPort = 64210 , serverName = "localhost" , apiVersion = V1 , queryLang  = Gremlin }
+defaultCayleyConfig :: CayleyConfig
 defaultCayleyConfig = CayleyConfig
     { serverPort = 64210
     , serverName = "localhost"
@@ -63,11 +63,11 @@ instance Eq Quad where
     Quad s p o l == Quad s' p' o' l' = s == s' && p == p' && o == o' && l == l'
 
 instance A.ToJSON Quad where
-    toJSON (Quad subject predicate object label) =
-        A.object [ "subject"   A..= subject
-                 , "predicate" A..= predicate
-                 , "object"    A..= object
-                 , "label"     A..= label
+    toJSON (Quad _subject _predicate _object _label) =
+        A.object [ "subject"   A..= _subject
+                 , "predicate" A..= _predicate
+                 , "object"    A..= _object
+                 , "label"     A..= _label
                  ]
 
 instance A.FromJSON Quad where
@@ -77,7 +77,7 @@ instance A.FromJSON Quad where
                              v A..: "object" <*>
                              v A..: "label"
     parseJSON _            = mzero
-     
+
 type Query = T.Text
 
 type Subject = T.Text

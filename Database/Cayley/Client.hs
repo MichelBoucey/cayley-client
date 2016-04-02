@@ -1,4 +1,6 @@
-{-# LANGUAGE OverloadedStrings, FlexibleContexts, RecordWildCards #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 module Database.Cayley.Client (
       Quad (..)
@@ -19,22 +21,21 @@ module Database.Cayley.Client (
     , isValid
     , successfulResults
     ) where
- 
-import Control.Applicative ((<|>))
-import Control.Lens.Fold ((^?))
-import Control.Monad.Catch
-import Control.Monad.Reader
-import qualified Data.Aeson as A
-import Data.Aeson.Lens (key)
-import qualified Data.Attoparsec.Text as AT
-import Data.Maybe (fromJust)
-import qualified Data.Text as T
-import Data.Text.Encoding (encodeUtf8)
-import Network.HTTP.Client
-import Network.HTTP.Client.MultipartFormData
 
-import Database.Cayley.Internal
-import Database.Cayley.Types
+import           Control.Applicative                   ((<|>))
+import           Control.Lens.Fold                     ((^?))
+import           Control.Monad.Catch
+import           Control.Monad.Reader
+import qualified Data.Aeson                            as A
+import           Data.Aeson.Lens                       (key)
+import qualified Data.Attoparsec.Text                  as AT
+import qualified Data.Text                             as T
+import           Data.Text.Encoding                    (encodeUtf8)
+import           Network.HTTP.Client
+import           Network.HTTP.Client.MultipartFormData
+
+import           Database.Cayley.Internal
+import           Database.Cayley.Types
 
 -- | Get a connection to Cayley with the given configuration.
 --
@@ -53,7 +54,7 @@ query :: CayleyConnection -> Query -> IO (Either String A.Value)
 query c q =
     runReaderT (doQuery (getManager c) (encodeUtf8 q)) (getConfig c)
   where
-    doQuery m q = do
+    doQuery m _q = do
         CayleyConfig {..} <- ask
         r <- apiRequest
                  m ("http://"
@@ -62,7 +63,7 @@ query c q =
                     ++ show apiVersion
                     ++ "/query/"
                     ++ show queryLang)
-                 serverPort (RequestBodyBS q)
+                 serverPort (RequestBodyBS _q)
         return $ case r of
             Just a  ->
                 case a ^? key "result" of
@@ -72,7 +73,7 @@ query c q =
                           Just e  ->
                               case A.fromJSON e of
                                   A.Success s -> Left s
-                                  A.Error e   -> Left e
+                                  A.Error _e   -> Left _e
                           Nothing ->
                               Left "No JSON response from Cayley server"
             Nothing -> Left "Can't get any response from Cayley server"
@@ -105,24 +106,24 @@ delete c q = deleteQuads c [q]
 -- | Write the given list of 'Quad'(s).
 writeQuads :: CayleyConnection -> [Quad] -> IO (Maybe A.Value)
 writeQuads c qs =
-    runReaderT (write (getManager c) qs) (getConfig c)
+    runReaderT (_write (getManager c) qs) (getConfig c)
   where
-    write m qs = do
-        CayleyConfig {..} <- ask
-        apiRequest
-            m ("http://"
-               ++ serverName
-               ++ "/api/v"
-               ++ show apiVersion
-               ++ "/write")
-            serverPort (toRequestBody qs)
+    _write m _qs = do
+         CayleyConfig {..} <- ask
+         apiRequest
+             m ("http://"
+                ++ serverName
+                ++ "/api/v"
+                ++ show apiVersion
+                ++ "/write")
+             serverPort (toRequestBody _qs)
 
 -- | Delete the given list of 'Quad'(s).
 deleteQuads :: CayleyConnection -> [Quad] -> IO (Maybe A.Value)
 deleteQuads c qs =
-    runReaderT (delete (getManager c) qs) (getConfig c)
+    runReaderT (_delete (getManager c) qs) (getConfig c)
   where
-    delete m qs = do
+    _delete m _qs = do
         CayleyConfig {..} <- ask
         apiRequest
             m ("http://"
@@ -131,17 +132,21 @@ deleteQuads c qs =
                ++ show apiVersion
                ++ "/delete")
             serverPort
-            (toRequestBody qs)
+            (toRequestBody _qs)
 
 -- | Write a N-Quad file.
 --
 -- >λ> writeNQuadFile conn "testdata.nq"
 -- >Just (Object (fromList [("result",String "Successfully wrote 11 quads.")]))
 --
+writeNQuadFile :: (MonadThrow m, MonadIO m)
+               => CayleyConnection
+               -> FilePath
+               -> m (Maybe A.Value)
 writeNQuadFile c p =
     runReaderT (writenq (getManager c) p) (getConfig c)
   where
-    writenq m p = do
+    writenq m _p = do
         CayleyConfig {..} <- ask
         r <- parseUrl ("http://"
                        ++ serverName
@@ -152,9 +157,9 @@ writeNQuadFile c p =
         t <- liftIO $
                  try $
                     flip httpLbs m
-                        =<< formDataBody [partFileSource "NQuadFile" p] r
+                        =<< formDataBody [partFileSource "NQuadFile" _p] r
         return $ case t of
-            Right r -> A.decode $ responseBody r
+            Right _r -> A.decode $ responseBody _r
             Left e  -> Just $
                 A.object ["error" A..= T.pack (show (e :: SomeException))]
 
@@ -185,7 +190,7 @@ successfulResults m = return $
                     case A.fromJSON v of
                         A.Success s ->
                             case AT.parse getAmount s of
-                                AT.Done "" a -> Right a
+                                AT.Done "" b -> Right b
                                 _            ->
                                     Left "Can't get amount of successful results"
                         A.Error e   -> Left e
@@ -194,13 +199,14 @@ successfulResults m = return $
                         Just e  ->
                             case A.fromJSON e of
                                 A.Success s -> Left s
-                                A.Error e   -> Left e
+                                A.Error r   -> Left r
                         Nothing -> Left "No JSON response from Cayley server"
         Nothing -> Left "Can't get any response from Cayley server"
   where
     getAmount = do
-        AT.string "Successfully "
-        AT.string "deleted " <|> AT.string "wrote "
+        _ <- AT.string "Successfully "
+        _ <- AT.string "deleted " <|> AT.string "wrote "
         a <- AT.decimal
-        AT.string " quads."
+        _ <- AT.string " quads."
         return a
+
