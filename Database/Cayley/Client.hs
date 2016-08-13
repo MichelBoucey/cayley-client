@@ -42,7 +42,7 @@ import           Database.Cayley.Types
 -- >λ> conn <- connectCayley defaultCayleyConfig
 --
 connectCayley :: CayleyConfig -> IO CayleyConnection
-connectCayley c =
+connectCayley c = 
     newManager defaultManagerSettings >>= \m -> return $ CayleyConnection (c,m)
 
 -- | Perform a query, in Gremlin graph query language per default (or in MQL).
@@ -73,7 +73,7 @@ query c q =
                           Just e  ->
                               case A.fromJSON e of
                                   A.Success s -> Left s
-                                  A.Error _e   -> Left _e
+                                  A.Error _e  -> Left _e
                           Nothing ->
                               Left "No JSON response from Cayley server"
             Nothing -> Left "Can't get any response from Cayley server"
@@ -85,7 +85,12 @@ query c q =
 -- >λ> writeQuad conn "Humphrey" "loves" "Lauren" (Just "In love")
 -- >Just (Object (fromList [("result",String "Successfully wrote 1 quads.")]))
 --
-writeQuad :: CayleyConnection -> Subject -> Predicate -> Object -> Maybe Label -> IO (Maybe A.Value)
+writeQuad :: CayleyConnection
+          -> Subject
+          -> Predicate
+          -> Object
+          -> Maybe Label
+          -> IO (Maybe A.Value)
 writeQuad c s p o l =
    writeQuads c [Quad { subject = s, predicate = p, object = o, label = l }]
 
@@ -95,7 +100,12 @@ write c q = writeQuads c [q]
 
 -- | Delete the 'Quad' defined by the given subject, predicate, object
 -- and optional label.
-deleteQuad :: CayleyConnection -> Subject -> Predicate -> Object -> Maybe Label -> IO (Maybe A.Value)
+deleteQuad :: CayleyConnection
+           -> Subject
+           -> Predicate
+           -> Object
+           -> Maybe Label
+           -> IO (Maybe A.Value)
 deleteQuad c s p o l =
     deleteQuads c [Quad { subject = s, predicate = p, object = o, label = l }]
 
@@ -160,7 +170,7 @@ writeNQuadFile c p =
                         =<< formDataBody [partFileSource "NQuadFile" _p] r
         return $ case t of
             Right _r -> A.decode $ responseBody _r
-            Left e  -> Just $
+            Left e   -> Just $
                 A.object ["error" A..= T.pack (show (e :: SomeException))]
 
 -- | A valid 'Quad' has its subject, predicate and object not empty.
