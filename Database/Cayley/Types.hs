@@ -36,6 +36,7 @@ defaultCayleyConfig = CayleyConfig
 
 data CayleyConnection = CayleyConnection (CayleyConfig,Manager)
 
+
 data Quad = Quad
     { subject   :: T.Text       -- ^ Subject node
     , predicate :: T.Text       -- ^ Predicate node
@@ -78,6 +79,36 @@ instance A.FromJSON Quad where
                              v A..: "label"
     parseJSON _            = mzero
 
+data Node = Node
+    { id           :: Integer
+    , tags         :: [Tag] -- ^ list of tags from the query
+    , values       :: [Value] -- ^ Known values from the query
+    , is_link_node :: Bool     -- ^ Does the node represent the link or the node (the oval shapes)
+    , is_fixed     :: Bool     -- ^ Is the node a fixed starting point of the query
+    } deriving Show
+
+instance A.FromJSON Node where
+    parseJSON (A.Object v) = Node <$>
+                           v A..: "id"<*>
+                           v A..: "tags" <*>
+                           v A..: "values" <*>
+                           v A..: "is_link_node" <*>
+                           v A..: "is_fixed"
+    parseJSON _            = mzero
+
+data Link = Link
+    { source    :: Integer -- ^ Node ID
+    , target    :: Integer -- ^ Node ID
+    , link_node :: Integer -- ^ Node ID
+    } deriving Show
+
+instance A.FromJSON Link where
+    parseJSON (A.Object v) = Link <$>
+                           v A..: "source" <*>
+                           v A..: "target" <*>
+                           v A..: "link_node"
+    parseJSON _            = mzero
+
 type Query = T.Text
 
 type Subject = T.Text
@@ -87,4 +118,8 @@ type Predicate = T.Text
 type Object = T.Text
 
 type Label = T.Text
+
+type Tag = T.Text
+
+type Value = T.Text
 
