@@ -29,7 +29,7 @@ apiRequest m u p b = do
                     A.object ["error" A..= T.pack (show (e :: SomeException))]
 
 toRequestBody :: [Quad] -> RequestBody
-toRequestBody qs = RequestBodyLBS $ A.encode $ fromList $ map A.toJSON qs
+toRequestBody = RequestBodyLBS . A.encode . fromList . map A.toJSON
 
 getManager :: CayleyConnection -> Manager
 getManager (CayleyConnection (_,m)) = m

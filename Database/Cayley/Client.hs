@@ -3,11 +3,14 @@
 {-# LANGUAGE RecordWildCards   #-}
 
 module Database.Cayley.Client (
+
       Quad (..)
+
     -- * Connect & query
     , defaultCayleyConfig
     , connectCayley
     , query
+
     -- * REST API operations
     , write
     , writeQuad
@@ -16,10 +19,12 @@ module Database.Cayley.Client (
     , delete
     , deleteQuad
     , deleteQuads
+
     -- * Utils
     , createQuad
     , isValid
     , successfulResults
+
     ) where
 
 import           Control.Applicative                   ((<|>))
@@ -42,7 +47,7 @@ import           Database.Cayley.Types
 -- >λ> conn <- connectCayley defaultCayleyConfig
 --
 connectCayley :: CayleyConfig -> IO CayleyConnection
-connectCayley c = 
+connectCayley c =
     newManager defaultManagerSettings >>= \m -> return $ CayleyConnection (c,m)
 
 -- | Perform a query, in Gremlin graph query language per default (or in MQL).

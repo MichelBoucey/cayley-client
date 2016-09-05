@@ -63,11 +63,11 @@ instance Eq Quad where
     Quad s p o l == Quad s' p' o' l' = s == s' && p == p' && o == o' && l == l'
 
 instance A.ToJSON Quad where
-    toJSON (Quad _subject _predicate _object _label) =
-        A.object [ "subject"   A..= _subject
-                 , "predicate" A..= _predicate
-                 , "object"    A..= _object
-                 , "label"     A..= _label
+    toJSON (Quad s p o l) =
+        A.object [ "subject"   A..= s
+                 , "predicate" A..= p
+                 , "object"    A..= o
+                 , "label"     A..= l
                  ]
 
 instance A.FromJSON Quad where
