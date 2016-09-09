@@ -34,8 +34,7 @@ defaultCayleyConfig = CayleyConfig
     , queryLang  = Gremlin
     }
 
-data CayleyConnection = CayleyConnection (CayleyConfig,Manager)
-
+data CayleyConnection = CayleyConnection (CayleyConfig, Manager)
 
 data Quad = Quad
     { subject   :: T.Text       -- ^ Subject node
@@ -79,12 +78,17 @@ instance A.FromJSON Quad where
                              v A..: "label"
     parseJSON _            = mzero
 
+data Shape = Shape
+    { nodes :: [Node]
+    , links :: [Link]
+    }
+
 data Node = Node
     { id           :: Integer
-    , tags         :: [Tag] -- ^ list of tags from the query
+    , tags         :: [Tag]   -- ^ list of tags from the query
     , values       :: [Value] -- ^ Known values from the query
-    , is_link_node :: Bool     -- ^ Does the node represent the link or the node (the oval shapes)
-    , is_fixed     :: Bool     -- ^ Is the node a fixed starting point of the query
+    , is_link_node :: Bool    -- ^ Does the node represent the link or the node (the oval shapes)
+    , is_fixed     :: Bool    -- ^ Is the node a fixed starting point of the query
     } deriving Show
 
 instance A.FromJSON Node where

@@ -37,3 +37,6 @@ getManager (CayleyConnection (_,m)) = m
 getConfig :: CayleyConnection -> CayleyConfig
 getConfig (CayleyConnection (c,_)) = c
 
+urlBase :: String -> APIVersion -> String
+urlBase s a = "http://" ++ s ++ "/api/v" ++ show a
+

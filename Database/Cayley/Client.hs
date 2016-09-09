@@ -10,6 +10,7 @@ module Database.Cayley.Client (
     , defaultCayleyConfig
     , connectCayley
     , query
+    , shape
 
     -- * REST API operations
     , write
@@ -62,12 +63,8 @@ query c q =
     doQuery m _q = do
         CayleyConfig {..} <- ask
         r <- apiRequest
-                 m ("http://"
-                    ++ serverName
-                    ++ "/api/v"
-                    ++ show apiVersion
-                    ++ "/query/"
-                    ++ show queryLang)
+                 m (urlBase serverName apiVersion
+                   ++ "/query/" ++ show queryLang)
                  serverPort (RequestBodyBS _q)
         return $ case r of
             Just a  ->
@@ -82,6 +79,19 @@ query c q =
                           Nothing ->
                               Left "No JSON response from Cayley server"
             Nothing -> Left "Can't get any response from Cayley server"
+
+-- shape :: CayleyConnection -> Query -> IO (Either String A.Value)
+shape :: CayleyConnection -> Query -> IO (Maybe A.Value)
+shape c q =
+    runReaderT (doShape (getManager c) (encodeUtf8 q)) (getConfig c)
+  where
+    doShape m _q = do
+        CayleyConfig {..} <- ask
+        r <- apiRequest
+                 m (urlBase serverName apiVersion
+                    ++ "/shape/" ++ show queryLang)
+                 serverPort (RequestBodyBS _q)
+        return r
 
 -- | Write a 'Quad' with the given subject, predicate, object and optional
 -- label. Throw result or extract amount of query 'successfulResults'
@@ -126,11 +136,7 @@ writeQuads c qs =
     _write m _qs = do
          CayleyConfig {..} <- ask
          apiRequest
-             m ("http://"
-                ++ serverName
-                ++ "/api/v"
-                ++ show apiVersion
-                ++ "/write")
+             m (urlBase serverName apiVersion ++ "/write")
              serverPort (toRequestBody _qs)
 
 -- | Delete the given list of 'Quad'(s).
@@ -141,11 +147,7 @@ deleteQuads c qs =
     _delete m _qs = do
         CayleyConfig {..} <- ask
         apiRequest
-            m ("http://"
-               ++ serverName
-               ++ "/api/v"
-               ++ show apiVersion
-               ++ "/delete")
+            m (urlBase serverName apiVersion ++ "/delete")
             serverPort
             (toRequestBody _qs)
 
@@ -163,11 +165,7 @@ writeNQuadFile c p =
   where
     writenq m _p = do
         CayleyConfig {..} <- ask
-        r <- parseUrl ("http://"
-                       ++ serverName
-                       ++ "/api/v"
-                       ++ show apiVersion
-                       ++ "/write/file/nquad")
+        r <- parseUrl (urlBase serverName apiVersion ++ "/write/file/nquad")
                  >>= \r -> return r { port = serverPort }
         t <- liftIO $
                  try $
