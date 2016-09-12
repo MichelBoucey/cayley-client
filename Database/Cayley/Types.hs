@@ -2,9 +2,11 @@
 
 module Database.Cayley.Types where
 
-import           Control.Monad
+import           Control.Monad       (mzero)
 import qualified Data.Aeson          as A
+import qualified Data.Aeson.Types    as AT
 import qualified Data.Text           as T
+import qualified Data.Vector         as V
 import           Network.HTTP.Client (Manager)
 
 data APIVersion = V1
@@ -83,35 +85,44 @@ data Shape = Shape
     , links :: [Link]
     }
 
+instance A.FromJSON Shape where
+    parseJSON (A.Object v) = do
+        vnds <- v A..: "nodes"
+        nds  <- mapM parseNode $ V.toList vnds
+        vlks <- v A..: "links"
+        lks  <- mapM parseLink $ V.toList vlks
+        return Shape { nodes = nds, links = lks}
+    parseJSON _            = mzero
+
+parseNode :: A.Value -> AT.Parser Node
+parseNode (A.Object v) = Node <$>
+                       v A..: "id"<*>
+                       v A..: "tags" <*>
+                       v A..: "values" <*>
+                       v A..: "is_link_node" <*>
+                       v A..: "is_fixed"
+parseNode _            = fail "node expected"
+
+parseLink :: AT.Value -> AT.Parser Link
+parseLink (A.Object v) = Link <$>
+                       v A..: "source" <*>
+                       v A..: "target" <*>
+                       v A..: "link_node"
+parseLink _            = fail "link expected"
+
 data Node = Node
     { id           :: Integer
     , tags         :: [Tag]   -- ^ list of tags from the query
     , values       :: [Value] -- ^ Known values from the query
-    , is_link_node :: Bool    -- ^ Does the node represent the link or the node (the oval shapes)
-    , is_fixed     :: Bool    -- ^ Is the node a fixed starting point of the query
+    , isLinkNode   :: Bool    -- ^ Does the node represent the link or the node (the oval shapes)
+    , isFixed      :: Bool    -- ^ Is the node a fixed starting point of the query
     } deriving Show
-
-instance A.FromJSON Node where
-    parseJSON (A.Object v) = Node <$>
-                           v A..: "id"<*>
-                           v A..: "tags" <*>
-                           v A..: "values" <*>
-                           v A..: "is_link_node" <*>
-                           v A..: "is_fixed"
-    parseJSON _            = mzero
 
 data Link = Link
     { source    :: Integer -- ^ Node ID
     , target    :: Integer -- ^ Node ID
-    , link_node :: Integer -- ^ Node ID
+    , linkNode  :: Integer -- ^ Node ID
     } deriving Show
-
-instance A.FromJSON Link where
-    parseJSON (A.Object v) = Link <$>
-                           v A..: "source" <*>
-                           v A..: "target" <*>
-                           v A..: "link_node"
-    parseJSON _            = mzero
 
 type Query = T.Text
 
