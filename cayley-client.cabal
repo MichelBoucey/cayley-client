@@ -12,7 +12,7 @@ category:            Database
 build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
-                   , testdata.nq
+                   , tests/testdata.nq
 
 Source-Repository head
   Type: git
