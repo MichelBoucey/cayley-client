@@ -1,0 +1,28 @@
+language: c
+
+sudo: false
+
+cache:
+  directories:
+  - $HOME/.stack/
+
+matrix:
+  include:
+    - env: CABALVER=1.22 GHCVER=7.10.3
+      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3],sources: [hvr-ghc]}}
+    - env: CABALVER=head GHCVER=head
+      addons: {apt: {packages: [cabal-install-head,ghc-head],  sources: [hvr-ghc]}}
+
+before_install:
+  - mkdir -p ~/.local/bin
+  - export PATH=~/.local/bin:$PATH
+  - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar -xzO --wildcards '*/stack' > ~/.local/bin/stack
+  - chmod a+x ~/.local/bin/stack
+
+install:
+  - stack setup --no-terminal
+
+script:
+  - stack --no-terminal --skip-ghc-check setup
+  - stack build --no-terminal --skip-ghc-check --only-snapshot
+
