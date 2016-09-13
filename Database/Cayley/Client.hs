@@ -10,7 +10,7 @@ module Database.Cayley.Client (
     , defaultCayleyConfig
     , connectCayley
     , query
-    , shape
+    , queryShape
 
     -- * REST API operations
     , write
@@ -80,9 +80,9 @@ query c q =
                               Left "No JSON response from Cayley server"
             Nothing -> Left "Can't get any response from Cayley server"
 
--- shape :: CayleyConnection -> Query -> IO (Either String A.Value)
-shape :: CayleyConnection -> Query -> IO (Maybe A.Value)
-shape c q =
+-- | Return the description of the given query.
+queryShape :: CayleyConnection -> Query -> IO (A.Result Shape)
+queryShape c q =
     runReaderT (doShape (getManager c) (encodeUtf8 q)) (getConfig c)
   where
     doShape m _q = do
@@ -91,7 +91,9 @@ shape c q =
                  m (urlBase serverName apiVersion
                     ++ "/shape/" ++ show queryLang)
                  serverPort (RequestBodyBS _q)
-        return r
+        case r of
+            Just o  -> return $ A.fromJSON o
+            Nothing -> return $ A.Error "API request error"
 
 -- | Write a 'Quad' with the given subject, predicate, object and optional
 -- label. Throw result or extract amount of query 'successfulResults'

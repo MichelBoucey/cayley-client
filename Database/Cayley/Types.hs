@@ -83,7 +83,7 @@ instance A.FromJSON Quad where
 data Shape = Shape
     { nodes :: [Node]
     , links :: [Link]
-    }
+    } deriving (Eq, Show)
 
 instance A.FromJSON Shape where
     parseJSON (A.Object v) = do
@@ -97,32 +97,32 @@ instance A.FromJSON Shape where
 parseNode :: A.Value -> AT.Parser Node
 parseNode (A.Object v) = Node <$>
                        v A..: "id"<*>
-                       v A..: "tags" <*>
-                       v A..: "values" <*>
+                       v A..:? "tags" <*>
+                       v A..:? "values" <*>
                        v A..: "is_link_node" <*>
                        v A..: "is_fixed"
-parseNode _            = fail "node expected"
+parseNode _            = fail "Node expected"
 
 parseLink :: AT.Value -> AT.Parser Link
 parseLink (A.Object v) = Link <$>
                        v A..: "source" <*>
                        v A..: "target" <*>
                        v A..: "link_node"
-parseLink _            = fail "link expected"
+parseLink _            = fail "Link expected"
 
 data Node = Node
     { id           :: Integer
-    , tags         :: [Tag]   -- ^ list of tags from the query
-    , values       :: [Value] -- ^ Known values from the query
-    , isLinkNode   :: Bool    -- ^ Does the node represent the link or the node (the oval shapes)
-    , isFixed      :: Bool    -- ^ Is the node a fixed starting point of the query
-    } deriving Show
+    , tags         :: Maybe [Tag]   -- ^ list of tags from the query
+    , values       :: Maybe [Value] -- ^ Known values from the query
+    , isLinkNode   :: Bool          -- ^ Does the node represent the link or the node (the oval shapes)
+    , isFixed      :: Bool          -- ^ Is the node a fixed starting point of the query
+    } deriving (Eq, Show)
 
 data Link = Link
     { source    :: Integer -- ^ Node ID
     , target    :: Integer -- ^ Node ID
     , linkNode  :: Integer -- ^ Node ID
-    } deriving Show
+    } deriving (Eq, Show)
 
 type Query = T.Text
 
