@@ -10,6 +10,7 @@ module Database.Cayley.Client (
     , defaultCayleyConfig
     , connectCayley
     , query
+    , Shape
     , queryShape
 
     -- * REST API operations
@@ -88,8 +89,7 @@ queryShape c q =
     doShape m _q = do
         CayleyConfig {..} <- ask
         r <- apiRequest
-                 m (urlBase serverName apiVersion
-                    ++ "/shape/" ++ show queryLang)
+                 m (urlBase serverName apiVersion ++ "/shape/" ++ show queryLang)
                  serverPort (RequestBodyBS _q)
         case r of
             Just o  -> return $ A.fromJSON o
