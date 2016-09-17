@@ -111,17 +111,17 @@ parseLink (A.Object v) = Link <$>
 parseLink _            = fail "Link expected"
 
 data Node = Node
-    { id           :: Integer
+    { id           :: !Integer
     , tags         :: Maybe [Tag]   -- ^ list of tags from the query
     , values       :: Maybe [Value] -- ^ Known values from the query
-    , isLinkNode   :: Bool          -- ^ Does the node represent the link or the node (the oval shapes)
-    , isFixed      :: Bool          -- ^ Is the node a fixed starting point of the query
+    , isLinkNode   :: !Bool          -- ^ Does the node represent the link or the node (the oval shapes)
+    , isFixed      :: !Bool          -- ^ Is the node a fixed starting point of the query
     } deriving (Eq, Show)
 
 data Link = Link
-    { source    :: Integer -- ^ Node ID
-    , target    :: Integer -- ^ Node ID
-    , linkNode  :: Integer -- ^ Node ID
+    { source    :: !Integer -- ^ Node ID
+    , target    :: !Integer -- ^ Node ID
+    , linkNode  :: !Integer -- ^ Node ID
     } deriving (Eq, Show)
 
 type Query = T.Text
