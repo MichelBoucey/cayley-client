@@ -18,15 +18,14 @@ apiRequest :: Manager
            -> RequestBody
            -> ReaderT CayleyConfig IO (Maybe A.Value)
 apiRequest m u p b = do
-    r <- parseUrl u >>= \c ->
-             return c { method = "POST", port = p, requestBody = b }
-    t <- liftIO $ try $ httpLbs r m
-    case t of
-        Right _r -> return $ A.decode $ responseBody _r
-        Left  e ->
-            return $
-                Just $
-                    A.object ["error" A..= T.pack (show (e :: SomeException))]
+  r <- parseUrl u >>= \c ->
+         return c { method = "POST", port = p, requestBody = b }
+  t <- liftIO $ try $ httpLbs r m
+  case t of
+    Right _r -> return $ A.decode $ responseBody _r
+    Left  e ->
+      return $
+        Just $ A.object ["error" A..= T.pack (show (e :: SomeException))]
 
 toRequestBody :: [Quad] -> RequestBody
 toRequestBody = RequestBodyLBS . A.encode . fromList . map A.toJSON

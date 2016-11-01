@@ -6,14 +6,14 @@ module Database.Cayley.Client (
 
       Quad (..)
 
-    -- * Connect & query
+    -- * Connection
     , defaultCayleyConfig
     , connectCayley
+
+    -- * Operations
     , query
     , Shape
     , queryShape
-
-    -- * REST API operations
     , write
     , writeQuad
     , writeQuads
@@ -50,50 +50,53 @@ import           Database.Cayley.Types
 --
 connectCayley :: CayleyConfig -> IO CayleyConnection
 connectCayley c =
-    newManager defaultManagerSettings >>= \m -> return $ CayleyConnection (c,m)
+  newManager defaultManagerSettings >>= \m -> return $ CayleyConnection (c,m)
 
 -- | Perform a query, in Gremlin graph query language per default (or in MQL).
 --
 -- >λ> query conn "graph.Vertex('Humphrey Bogart').In('name').All()"
 -- >Right (Array (fromList [Object (fromList [("id",String "/en/humphrey_bogart")])]))
 --
-query :: CayleyConnection -> Query -> IO (Either String A.Value)
+query :: CayleyConnection
+      -> Query
+      -> IO (Either String A.Value)
 query c q =
-    runReaderT (doQuery (getManager c) (encodeUtf8 q)) (getConfig c)
+  runReaderT (doQuery (getManager c) (encodeUtf8 q)) (getConfig c)
   where
     doQuery m _q = do
-        CayleyConfig {..} <- ask
+        CayleyConfig{..} <- ask
         r <- apiRequest
-                 m (urlBase serverName apiVersion
-                   ++ "/query/" ++ show queryLang)
-                 serverPort (RequestBodyBS _q)
+               m (urlBase serverName apiVersion
+                 ++ "/query/" ++ show queryLang)
+               serverPort (RequestBodyBS _q)
         return $ case r of
-            Just a  ->
-                case a ^? key "result" of
-                    Just v  -> Right v
-                    Nothing ->
-                      case a ^? key "error" of
-                          Just e  ->
-                              case A.fromJSON e of
-                                  A.Success s -> Left s
-                                  A.Error _e  -> Left _e
-                          Nothing ->
-                              Left "No JSON response from Cayley server"
-            Nothing -> Left "Can't get any response from Cayley server"
+          Just a  ->
+            case a ^? key "result" of
+              Just v  -> Right v
+              Nothing ->
+                case a ^? key "error" of
+                  Just e  ->
+                    case A.fromJSON e of
+                      A.Success s -> Left s
+                      A.Error _e  -> Left _e
+                  Nothing -> Left "No JSON response from Cayley server"
+          Nothing -> Left "Can't get any response from Cayley server"
 
--- | Return the description of the given query.
-queryShape :: CayleyConnection -> Query -> IO (A.Result Shape)
+-- | Return the description of the given executed query.
+queryShape :: CayleyConnection
+           -> Query
+           -> IO (A.Result Shape)
 queryShape c q =
-    runReaderT (doShape (getManager c) (encodeUtf8 q)) (getConfig c)
+  runReaderT (doShape (getManager c) (encodeUtf8 q)) (getConfig c)
   where
     doShape m _q = do
-        CayleyConfig {..} <- ask
-        r <- apiRequest
-                 m (urlBase serverName apiVersion ++ "/shape/" ++ show queryLang)
-                 serverPort (RequestBodyBS _q)
-        case r of
-            Just o  -> return $ A.fromJSON o
-            Nothing -> return $ A.Error "API request error"
+      CayleyConfig{..} <- ask
+      r <- apiRequest
+             m (urlBase serverName apiVersion ++ "/shape/" ++ show queryLang)
+             serverPort (RequestBodyBS _q)
+      case r of
+        Just o  -> return $ A.fromJSON o
+        Nothing -> return $ A.Error "API request error"
 
 -- | Write a 'Quad' with the given subject, predicate, object and optional
 -- label. Throw result or extract amount of query 'successfulResults'
@@ -109,10 +112,12 @@ writeQuad :: CayleyConnection
           -> Maybe Label
           -> IO (Maybe A.Value)
 writeQuad c s p o l =
-   writeQuads c [Quad { subject = s, predicate = p, object = o, label = l }]
+  writeQuads c [Quad { subject = s, predicate = p, object = o, label = l }]
 
 -- | Write the given 'Quad'.
-write :: CayleyConnection -> Quad -> IO (Maybe A.Value)
+write :: CayleyConnection
+      -> Quad
+      -> IO (Maybe A.Value)
 write c q = writeQuads c [q]
 
 -- | Delete the 'Quad' defined by the given subject, predicate, object
@@ -124,34 +129,38 @@ deleteQuad :: CayleyConnection
            -> Maybe Label
            -> IO (Maybe A.Value)
 deleteQuad c s p o l =
-    deleteQuads c [Quad { subject = s, predicate = p, object = o, label = l }]
+  deleteQuads c [Quad { subject = s, predicate = p, object = o, label = l }]
 
 -- | Delete the given 'Quad'.
 delete :: CayleyConnection -> Quad -> IO (Maybe A.Value)
 delete c q = deleteQuads c [q]
 
 -- | Write the given list of 'Quad'(s).
-writeQuads :: CayleyConnection -> [Quad] -> IO (Maybe A.Value)
+writeQuads :: CayleyConnection
+           -> [Quad]
+           -> IO (Maybe A.Value)
 writeQuads c qs =
-    runReaderT (_write (getManager c) qs) (getConfig c)
+  runReaderT (_write (getManager c) qs) (getConfig c)
   where
     _write m _qs = do
-         CayleyConfig {..} <- ask
-         apiRequest
-             m (urlBase serverName apiVersion ++ "/write")
-             serverPort (toRequestBody _qs)
+      CayleyConfig{..} <- ask
+      apiRequest
+        m (urlBase serverName apiVersion ++ "/write")
+        serverPort (toRequestBody _qs)
 
 -- | Delete the given list of 'Quad'(s).
-deleteQuads :: CayleyConnection -> [Quad] -> IO (Maybe A.Value)
+deleteQuads :: CayleyConnection
+            -> [Quad]
+            -> IO (Maybe A.Value)
 deleteQuads c qs =
-    runReaderT (_delete (getManager c) qs) (getConfig c)
+  runReaderT (_delete (getManager c) qs) (getConfig c)
   where
     _delete m _qs = do
-        CayleyConfig {..} <- ask
-        apiRequest
-            m (urlBase serverName apiVersion ++ "/delete")
-            serverPort
-            (toRequestBody _qs)
+      CayleyConfig{..} <- ask
+      apiRequest
+        m (urlBase serverName apiVersion ++ "/delete")
+        serverPort
+        (toRequestBody _qs)
 
 -- | Write a N-Quad file.
 --
@@ -163,32 +172,36 @@ writeNQuadFile :: (MonadThrow m, MonadIO m)
                -> FilePath
                -> m (Maybe A.Value)
 writeNQuadFile c p =
-    runReaderT (writenq (getManager c) p) (getConfig c)
+  runReaderT (writenq (getManager c) p) (getConfig c)
   where
     writenq m _p = do
-        CayleyConfig {..} <- ask
-        r <- parseUrl (urlBase serverName apiVersion ++ "/write/file/nquad")
-                 >>= \r -> return r { port = serverPort }
-        t <- liftIO $
-                 try $
-                    flip httpLbs m
-                        =<< formDataBody [partFileSource "NQuadFile" _p] r
-        return $ case t of
-            Right _r -> A.decode $ responseBody _r
-            Left e   -> Just $
-                A.object ["error" A..= T.pack (show (e :: SomeException))]
+      CayleyConfig{..} <- ask
+      r <- parseUrl (urlBase serverName apiVersion ++ "/write/file/nquad")
+             >>= \r -> return r { port = serverPort }
+      t <- liftIO $
+             try $
+               flip httpLbs m
+                 =<< formDataBody [partFileSource "NQuadFile" _p] r
+      return $ case t of
+        Right _r -> A.decode $ responseBody _r
+        Left e   -> Just $
+          A.object ["error" A..= T.pack (show (e :: SomeException))]
 
 -- | A valid 'Quad' has its subject, predicate and object not empty.
 isValid :: Quad -> Bool
-isValid Quad {..} = T.empty `notElem` [subject, predicate, object]
+isValid Quad{..} = T.empty `notElem` [subject, predicate, object]
 
 -- | Given a subject, a predicate, an object and an optional label,
 -- create a valid 'Quad'.
-createQuad :: Subject -> Predicate -> Object -> Maybe Label -> Maybe Quad
+createQuad :: Subject
+           -> Predicate
+           -> Object
+           -> Maybe Label
+           -> Maybe Quad
 createQuad s p o l =
-    if T.empty `notElem` [s,p,o]
-        then Just Quad { subject = s, predicate = p, object = o, label = l }
-        else Nothing
+  if T.empty `notElem` [s,p,o]
+    then Just Quad { subject = s, predicate = p, object = o, label = l }
+    else Nothing
 
 -- | Get amount of successful results from a write/delete 'Quad'(s)
 -- operation, or an explicite error message.
@@ -196,32 +209,32 @@ createQuad s p o l =
 -- >λ> writeNQuadFile conn "testdata.nq" >>= successfulResults
 -- >Right 11
 --
-successfulResults :: Maybe A.Value -> IO (Either String Int)
+successfulResults :: Maybe A.Value
+                  -> IO (Either String Int)
 successfulResults m = return $
-    case m of
-        Just a  ->
-            case a ^? key "result" of
-                Just v  ->
-                    case A.fromJSON v of
-                        A.Success s ->
-                            case AT.parse getAmount s of
-                                AT.Done "" b -> Right b
-                                _            ->
-                                    Left "Can't get amount of successful results"
-                        A.Error e   -> Left e
-                Nothing ->
-                    case a ^? key "error" of
-                        Just e  ->
-                            case A.fromJSON e of
-                                A.Success s -> Left s
-                                A.Error r   -> Left r
-                        Nothing -> Left "No JSON response from Cayley server"
-        Nothing -> Left "Can't get any response from Cayley server"
+  case m of
+    Just a  ->
+      case a ^? key "result" of
+        Just v  ->
+          case A.fromJSON v of
+            A.Success s ->
+              case AT.parse getAmount s of
+                AT.Done "" b -> Right b
+                _            -> Left "Can't get amount of successful results"
+            A.Error e   -> Left e
+        Nothing ->
+          case a ^? key "error" of
+            Just e  ->
+              case A.fromJSON e of
+                A.Success s -> Left s
+                A.Error r   -> Left r
+            Nothing -> Left "No JSON response from Cayley server"
+    Nothing -> Left "Can't get any response from Cayley server"
   where
-    getAmount = do
-        _ <- AT.string "Successfully "
-        _ <- AT.string "deleted " <|> AT.string "wrote "
-        a <- AT.decimal
-        _ <- AT.string " quads."
-        return a
+  getAmount = do
+      _ <- AT.string "Successfully "
+      _ <- AT.string "deleted " <|> AT.string "wrote "
+      a <- AT.decimal
+      _ <- AT.string " quads."
+      return a
 
