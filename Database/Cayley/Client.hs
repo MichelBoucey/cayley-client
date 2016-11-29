@@ -215,10 +215,10 @@ successfulResults m = return $
   case m of
     Just v ->
       case v ^? L.key "result" . L._String of
-        Just r ->
+        Just r  ->
           case APT.parse getAmount r of
             APT.Done "" i -> Right i
-            _            -> fail "Can't get amount of successful results"
+            _             -> fail "Can't get amount of successful results"
         Nothing ->
           case v ^? L.key "error" . L._String of
             Just e  -> fail (T.unpack e)
