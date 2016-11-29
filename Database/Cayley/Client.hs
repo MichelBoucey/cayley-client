@@ -34,8 +34,8 @@ import           Control.Lens.Fold                     ((^?))
 import           Control.Monad.Catch
 import           Control.Monad.Reader
 import qualified Data.Aeson                            as A
-import           Data.Aeson.Lens                       (key)
-import qualified Data.Attoparsec.Text                  as AT
+import qualified Data.Aeson.Lens                       as L
+import qualified Data.Attoparsec.Text                  as APT
 import qualified Data.Text                             as T
 import           Data.Text.Encoding                    (encodeUtf8)
 import           Network.HTTP.Client
@@ -71,10 +71,10 @@ query c q =
                serverPort (RequestBodyBS _q)
         return $ case r of
           Just a  ->
-            case a ^? key "result" of
+            case a ^? L.key "result" of
               Just v  -> Right v
               Nothing ->
-                case a ^? key "error" of
+                case a ^? L.key "error" of
                   Just e  ->
                     case A.fromJSON e of
                       A.Success s -> Left s
@@ -213,28 +213,22 @@ successfulResults :: Maybe A.Value
                   -> IO (Either String Int)
 successfulResults m = return $
   case m of
-    Just a  ->
-      case a ^? key "result" of
-        Just v  ->
-          case A.fromJSON v of
-            A.Success s ->
-              case AT.parse getAmount s of
-                AT.Done "" b -> Right b
-                _            -> Left "Can't get amount of successful results"
-            A.Error e   -> Left e
+    Just v ->
+      case v ^? L.key "result" . L._String of
+        Just r ->
+          case APT.parse getAmount r of
+            APT.Done "" i -> Right i
+            _            -> fail "Can't get amount of successful results"
         Nothing ->
-          case a ^? key "error" of
-            Just e  ->
-              case A.fromJSON e of
-                A.Success s -> Left s
-                A.Error r   -> Left r
-            Nothing -> Left "No JSON response from Cayley server"
-    Nothing -> Left "Can't get any response from Cayley server"
+          case v ^? L.key "error" . L._String of
+            Just e  -> fail (T.unpack e)
+            Nothing -> fail "No JSON response from Cayley server"
+    Nothing -> fail "Can't get any response from Cayley server"
   where
   getAmount = do
-      _ <- AT.string "Successfully "
-      _ <- AT.string "deleted " <|> AT.string "wrote "
-      a <- AT.decimal
-      _ <- AT.string " quads."
+      _ <- APT.string "Successfully "
+      _ <- APT.string "deleted " <|> APT.string "wrote "
+      a <- APT.decimal
+      _ <- APT.string " quads."
       return a
 
