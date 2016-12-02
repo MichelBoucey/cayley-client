@@ -74,13 +74,10 @@ query c q =
             case a ^? L.key "result" of
               Just v  -> Right v
               Nothing ->
-                case a ^? L.key "error" of
-                  Just e  ->
-                    case A.fromJSON e of
-                      A.Success s -> Left s
-                      A.Error _e  -> Left _e
-                  Nothing -> Left "No JSON response from Cayley server"
-          Nothing -> Left "Can't get any response from Cayley server"
+                case a ^? L.key "error" . L._String of
+                  Just e  -> fail (show e)
+                  Nothing -> fail "No JSON response from Cayley server"
+          Nothing -> fail "Can't get any response from Cayley server"
 
 -- | Return the description of the given executed query.
 queryShape :: CayleyConnection
@@ -221,7 +218,7 @@ successfulResults m = return $
             _             -> fail "Can't get amount of successful results"
         Nothing ->
           case v ^? L.key "error" . L._String of
-            Just e  -> fail (T.unpack e)
+            Just e  -> fail (show e)
             Nothing -> fail "No JSON response from Cayley server"
     Nothing -> fail "Can't get any response from Cayley server"
   where
