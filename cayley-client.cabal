@@ -23,21 +23,21 @@ library
                     , Database.Cayley.Types
   other-modules:      Database.Cayley.Internal
   other-extensions:   OverloadedStrings
-  build-depends:      aeson >= 0.10 && < 1.1
-                    , attoparsec >= 0.13.0 && < 0.14
-                    , base >= 4.8.2 && < 5
+  build-depends:      aeson >= 0.8.0.2 && < 1.1
+                    , attoparsec >= 0.12.1.6 && < 0.14
+                    , base >= 4.8.1.0 && < 5
                     , bytestring >= 0.10.6 && < 0.11
                     , binary >= 0.7.5 && < 0.9
-                    , text >= 1.2.2 && < 1.3
-                    , vector >= 0.11.0 && < 0.12
-                    , transformers >= 0.4.2 && < 0.6
-                    , mtl >= 2.2.1 && < 2.3
-                    , unordered-containers >= 0.2.5.1 && < 0.3
-                    , exceptions >= 0.8.2 && < 0.9
+                    , exceptions >= 0.8.0.2 && < 0.9
                     , http-client >= 0.4.26 && < 0.6
                     , http-conduit >= 2.1.8 && < 2.3
-                    , lens >= 4.13 && < 4.16
+                    , lens >= 4.12.3 && < 4.16
+                    , mtl >= 2.2.1 && < 2.3
                     , lens-aeson >= 1.0.0 && < 1.1
+                    , text >= 1.2.2 && < 1.3
+                    , transformers >= 0.4.2 && < 0.6
+                    , unordered-containers >= 0.2.5.1 && < 0.3
+                    , vector >= 0.10.12.3 && < 0.12
 
   default-language:   Haskell2010
   GHC-Options:      -Wall
