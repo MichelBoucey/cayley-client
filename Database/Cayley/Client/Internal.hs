@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Database.Cayley.Internal where
+module Database.Cayley.Client.Internal where
 
 import           Control.Monad.Catch
 import           Control.Monad.IO.Class

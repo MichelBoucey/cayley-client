@@ -41,7 +41,7 @@ import           Data.Text.Encoding                    (encodeUtf8)
 import           Network.HTTP.Client
 import           Network.HTTP.Client.MultipartFormData
 
-import           Database.Cayley.Internal
+import           Database.Cayley.Client.Internal
 import           Database.Cayley.Types
 
 -- | Get a connection to Cayley with the given configuration.
