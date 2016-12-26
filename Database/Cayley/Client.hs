@@ -25,7 +25,7 @@ module Database.Cayley.Client (
     -- * Utils
     , createQuad
     , isValid
-    , successfulResults
+    , results
 
     ) where
 
@@ -96,7 +96,7 @@ queryShape c q =
         Nothing -> return $ A.Error "API request error"
 
 -- | Write a 'Quad' with the given subject, predicate, object and optional
--- label. Throw result or extract amount of query 'successfulResults'
+-- label. Throw result or extract amount of query 'results'
 -- from it.
 --
 -- >λ> writeQuad conn "Humphrey" "loves" "Lauren" (Just "In love")
@@ -200,22 +200,22 @@ createQuad s p o l =
     then Just Quad { subject = s, predicate = p, object = o, label = l }
     else Nothing
 
--- | Get amount of successful results from a write/delete 'Quad'(s)
--- operation, or an explicite error message.
+-- | Get amount of results from a write/delete 'Quad'(s) operation,
+-- or an explicite error message.
 --
--- >λ> writeNQuadFile conn "testdata.nq" >>= successfulResults
+-- >λ> writeNQuadFile conn "testdata.nq" >>= results
 -- >Right 11
 --
-successfulResults :: Maybe A.Value
-                  -> IO (Either String Int)
-successfulResults m = return $
+results :: Maybe A.Value
+        -> IO (Either String Int)
+results m = return $
   case m of
     Just v ->
       case v ^? L.key "result" . L._String of
         Just r  ->
           case APT.parse getAmount r of
             APT.Done "" i -> Right i
-            _             -> fail "Can't get amount of successful results"
+            _             -> fail "Can't get amount of results"
         Nothing ->
           case v ^? L.key "error" . L._String of
             Just e  -> fail (show e)

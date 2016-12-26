@@ -28,5 +28,5 @@ main = hspec $ do
     describe "writeNQuadFile" $
         it "writes quads from a file to Cayley server" $ do
             c <- connectCayley defaultCayleyConfig
-            (writeNQuadFile c "./tests/testdata.nq" >>= successfulResults) `shouldReturn` Right 15
+            (writeNQuadFile c "./tests/testdata.nq" >>= results) `shouldReturn` Right 15
 
