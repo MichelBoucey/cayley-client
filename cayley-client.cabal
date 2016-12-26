@@ -1,5 +1,5 @@
 name:                cayley-client
-version:             0.2.1.1
+version:             0.3.0
 synopsis:            A Haskell client for the Cayley graph database
 description:         cayley-client implements the RESTful API of the Cayley graph database.
 homepage:            https://github.com/MichelBoucey/cayley-client
@@ -46,7 +46,7 @@ test-suite tests
   type:               exitcode-stdio-1.0
   hs-source-dirs:     tests
   main-is:            hspec.hs
-  build-depends:      hspec >= 2.1.10
+  build-depends:      hspec >= 2.1.10 && < 2.2
                     , base >= 4.8 && < 5
                     , cayley-client
                     , aeson >=0.8.0.2 && < 1.1
