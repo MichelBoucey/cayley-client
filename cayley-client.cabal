@@ -1,5 +1,5 @@
 name:                cayley-client
-version:             0.3.0
+version:             0.3.1
 synopsis:            A Haskell client for the Cayley graph database
 description:         cayley-client implements the RESTful API of the Cayley graph database.
 homepage:            https://github.com/MichelBoucey/cayley-client
@@ -23,7 +23,7 @@ library
                     , Database.Cayley.Types
                     , Database.Cayley.Client.Internal
   other-extensions:   OverloadedStrings
-  build-depends:      aeson >= 0.8.0.2 && < 1.1
+  build-depends:      aeson >= 0.8.0.2 && < 1.2
                     , attoparsec >= 0.12.1.6 && < 0.14
                     , base >= 4.8.1.0 && < 5
                     , bytestring >= 0.10.6 && < 0.11
@@ -40,7 +40,7 @@ library
                     , vector >= 0.10.12.3 && < 0.12
 
   default-language:   Haskell2010
-  GHC-Options:      -Wall
+  GHC-Options:        -Wall
 
 test-suite tests
   type:               exitcode-stdio-1.0
