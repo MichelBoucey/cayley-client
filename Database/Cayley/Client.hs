@@ -91,9 +91,10 @@ queryShape c q =
       r <- apiRequest
              m (urlBase serverName apiVersion ++ "/shape/" ++ show queryLang)
              serverPort (RequestBodyBS _q)
-      case r of
-        Just o  -> return $ A.fromJSON o
-        Nothing -> return $ A.Error "API request error"
+      return $
+        case r of
+          Just o  -> A.fromJSON o
+          Nothing -> A.Error "API request error"
 
 -- | Write a 'Quad' with the given subject, predicate, object and optional
 -- label. Throw result or extract amount of query 'results'
