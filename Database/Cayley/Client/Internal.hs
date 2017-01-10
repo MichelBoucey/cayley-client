@@ -18,7 +18,7 @@ apiRequest :: Manager
            -> RequestBody
            -> ReaderT CayleyConfig IO (Maybe A.Value)
 apiRequest m u p b = do
-  r <- parseUrl u >>= \c ->
+  r <- parseRequest u >>= \c ->
          return c { method = "POST", port = p, requestBody = b }
   t <- liftIO $ try $ httpLbs r m
   case t of

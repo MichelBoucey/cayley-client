@@ -174,7 +174,7 @@ writeNQuadFile c p =
   where
     writenq m _p = do
       CayleyConfig{..} <- ask
-      r <- parseUrl (urlBase serverName apiVersion ++ "/write/file/nquad")
+      r <- parseRequest (urlBase serverName apiVersion ++ "/write/file/nquad")
              >>= \r -> return r { port = serverPort }
       t <- liftIO $
              try $
