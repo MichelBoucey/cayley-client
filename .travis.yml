@@ -17,9 +17,9 @@ language: generic
 # Caching so the next build will be fast too.
 cache:
   directories:
-  - $HOME/.ghc
-  - $HOME/.cabal
-  - $HOME/.stack
+    - $HOME/.ghc
+    - $HOME/.cabal
+    - $HOME/.stack
 
 # The different configurations we want to test. We have BUILD=cabal which uses
 # cabal-install, and BUILD=stack which uses Stack. More documentation on each
@@ -117,8 +117,8 @@ matrix:
     os: osx
 
   allow_failures:
-  - env: BUILD=cabal GHCVER=head  CABALVER=head HAPPYVER=1.19.5 ALEXVER=3.1.7
-  - env: BUILD=stack ARGS="--resolver nightly"
+    - env: BUILD=cabal GHCVER=head  CABALVER=head HAPPYVER=1.19.5 ALEXVER=3.1.7
+    - env: BUILD=stack ARGS="--resolver nightly"
 
 before_install:
 # Using compiler above sets CC to an invalid value, so unset it
