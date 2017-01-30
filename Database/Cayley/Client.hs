@@ -82,7 +82,7 @@ query c q =
 -- | Return the description of the given executed query.
 queryShape :: CayleyConnection
            -> Query
-           -> IO (A.Result Shape)
+           -> IO (Either String Shape)
 queryShape c q =
   runReaderT (doShape (getManager c) (encodeUtf8 q)) (getConfig c)
   where
@@ -93,8 +93,11 @@ queryShape c q =
              serverPort (RequestBodyBS _q)
       return $
         case r of
-          Just o  -> A.fromJSON o
-          Nothing -> A.Error "API request error"
+          Just o  ->
+            case A.fromJSON o of
+              A.Success s -> Right s
+              A.Error e   -> Left ("Not a shape (\"" ++ e ++ "\")")
+          Nothing -> Left "API request error"
 
 -- | Write a 'Quad' with the given subject, predicate, object and optional
 -- label. Throw result or extract amount of query 'results'
