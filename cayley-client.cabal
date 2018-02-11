@@ -1,5 +1,5 @@
 name:                cayley-client
-version:             0.4.2
+version:             0.4.3
 synopsis:            A Haskell client for the Cayley graph database
 description:         cayley-client implements the RESTful API of the Cayley graph database.
 homepage:            https://github.com/MichelBoucey/cayley-client
