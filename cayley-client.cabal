@@ -31,7 +31,7 @@ library
                     , exceptions >= 0.8.0.2 && < 0.9
                     , http-client >= 0.4.30 && < 0.6
                     , http-conduit >= 2.1.8 && < 2.4
-                    , lens >= 4.12.3 && < 4.16
+                    , lens >= 4.12.3 && < 4.17
                     , mtl >= 2.2.1 && < 2.3
                     , lens-aeson >= 1.0.0 && < 1.1
                     , text >= 1.2.2 && < 1.3
