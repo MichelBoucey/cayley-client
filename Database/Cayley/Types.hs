@@ -39,7 +39,7 @@ defaultCayleyConfig = CayleyConfig
   , queryLang  = Gremlin
   }
 
-data CayleyConnection = CayleyConnection (CayleyConfig, Manager)
+newtype CayleyConnection = CayleyConnection (CayleyConfig, Manager)
 
 data Quad = Quad
   { subject   :: !T.Text         -- ^ Subject node
