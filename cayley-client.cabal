@@ -48,7 +48,7 @@ test-suite tests
   type:               exitcode-stdio-1.0
   hs-source-dirs:     tests
   main-is:            hspec.hs
-  build-depends:      hspec >= 2.1.10 && < 2.7
+  build-depends:      hspec >= 2.1.10 && < 3
                     , base >= 4.8 && < 5
                     , cayley-client
                     , aeson >=0.8.0.2 && < 1.5
