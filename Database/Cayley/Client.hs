@@ -75,9 +75,9 @@ query c q =
               Just v  -> Right v
               Nothing ->
                 case a ^? L.key "error" . L._String of
-                  Just e  -> fail (show e)
-                  Nothing -> fail "No JSON response from Cayley server"
-          Nothing -> fail "Can't get any response from Cayley server"
+                  Just e  -> Left (show e)
+                  Nothing -> Left "No JSON response from Cayley server"
+          Nothing -> Left "Can't get any response from Cayley server"
 
 -- | Return the description of the given executed query.
 queryShape :: CayleyConnection
@@ -219,12 +219,12 @@ results m = return $
         Just r  ->
           case APT.parse getAmount r of
             APT.Done "" i -> Right i
-            _             -> fail "Can't get amount of results"
+            _             -> Left "Can't get amount of results"
         Nothing ->
           case v ^? L.key "error" . L._String of
-            Just e  -> fail (show e)
-            Nothing -> fail "No JSON response from Cayley server"
-    Nothing -> fail "Can't get any response from Cayley server"
+            Just e  -> Left (show e)
+            Nothing -> Left "No JSON response from Cayley server"
+    Nothing -> Left "Can't get any response from Cayley server"
   where
   getAmount = do
       _ <- APT.string "Successfully "
