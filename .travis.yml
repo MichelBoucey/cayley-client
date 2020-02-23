@@ -4,7 +4,7 @@
 #
 # For more information, see https://github.com/haskell-CI/haskell-ci
 #
-# version: 0.8
+# version: 0.9.20191209
 #
 version: ~> 1.0
 language: c
@@ -156,5 +156,5 @@ script:
   - rm -f cabal.project.local
   - ${CABAL} v2-build $WITHCOMPILER --disable-tests --disable-benchmarks all | color_cabal_output
 
-# REGENDATA ("0.8",["--no-run-tests","--no-tests","cayley-client.cabal"])
+# REGENDATA ("0.9.20191209",["--no-run-tests","--no-tests","cayley-client.cabal"])
 # EOF
