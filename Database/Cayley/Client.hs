@@ -50,7 +50,8 @@ import           Database.Cayley.Types
 --
 connectCayley :: CayleyConfig -> IO CayleyConnection
 connectCayley c =
-  newManager defaultManagerSettings >>= \m -> return $ CayleyConnection (c,m)
+  newManager defaultManagerSettings
+    >>= \m -> return $ CayleyConnection { cayleyConfig = c, manager = m }
 
 -- | Perform a query, in Gremlin graph query language per default (or in MQL).
 --
@@ -60,16 +61,16 @@ connectCayley c =
 query :: CayleyConnection
       -> Query
       -> IO (Either String A.Value)
-query c q =
-  runReaderT (doQuery (getManager c) (encodeUtf8 q)) (getConfig c)
+query CayleyConnection{..} =
+  doQuery manager cayleyConfig
   where
-    doQuery m _q = do
-        CayleyConfig{..} <- ask
-        r <- apiRequest
-               m (urlBase serverName apiVersion
-                 ++ "/query/" ++ show queryLang)
-               serverPort (RequestBodyBS _q)
-        return $ case r of
+    doQuery m CayleyConfig{..} q = do
+      r <- apiRequest
+             m (urlBase serverName apiVersion
+               ++ "/query/" ++ show queryLang)
+             serverPort (RequestBodyBS $ encodeUtf8 q)
+      return $
+        case r of
           Just a  ->
             case a ^? L.key "result" of
               Just v  -> Right v
@@ -83,14 +84,13 @@ query c q =
 queryShape :: CayleyConnection
            -> Query
            -> IO (Either String Shape)
-queryShape c q =
-  runReaderT (doShape (getManager c) (encodeUtf8 q)) (getConfig c)
+queryShape CayleyConnection{..} =
+  doShape manager cayleyConfig
   where
-    doShape m _q = do
-      CayleyConfig{..} <- ask
+    doShape m CayleyConfig{..} q = do
       r <- apiRequest
              m (urlBase serverName apiVersion ++ "/shape/" ++ show queryLang)
-             serverPort (RequestBodyBS _q)
+             serverPort (RequestBodyBS $ encodeUtf8 q)
       return $
         case r of
           Just o  ->
@@ -140,28 +140,25 @@ delete c q = deleteQuads c [q]
 writeQuads :: CayleyConnection
            -> [Quad]
            -> IO (Maybe A.Value)
-writeQuads c qs =
-  runReaderT (_write (getManager c) qs) (getConfig c)
+writeQuads CayleyConnection{..} =
+  writeQuads' manager cayleyConfig
   where
-    _write m _qs = do
-      CayleyConfig{..} <- ask
+    writeQuads' m CayleyConfig{..} qs =
       apiRequest
         m (urlBase serverName apiVersion ++ "/write")
-        serverPort (toRequestBody _qs)
+        serverPort (toRequestBody qs)
 
 -- | Delete the given list of 'Quad'(s).
 deleteQuads :: CayleyConnection
             -> [Quad]
             -> IO (Maybe A.Value)
-deleteQuads c qs =
-  runReaderT (_delete (getManager c) qs) (getConfig c)
+deleteQuads CayleyConnection{..} =
+  doDeletions manager cayleyConfig
   where
-    _delete m _qs = do
-      CayleyConfig{..} <- ask
+    doDeletions m CayleyConfig{..} qs =
       apiRequest
         m (urlBase serverName apiVersion ++ "/delete")
-        serverPort
-        (toRequestBody _qs)
+        serverPort (toRequestBody qs)
 
 -- | Write a N-Quad file.
 --
@@ -172,21 +169,21 @@ writeNQuadFile :: (MonadThrow m, MonadIO m)
                => CayleyConnection
                -> FilePath
                -> m (Maybe A.Value)
-writeNQuadFile c p =
-  runReaderT (writenq (getManager c) p) (getConfig c)
+writeNQuadFile CayleyConnection{..} =
+  doWrite manager cayleyConfig
   where
-    writenq m _p = do
-      CayleyConfig{..} <- ask
+    doWrite m CayleyConfig{..} fp = do
       r <- parseRequest (urlBase serverName apiVersion ++ "/write/file/nquad")
              >>= \r -> return r { port = serverPort }
       t <- liftIO $
              try $
                flip httpLbs m
-                 =<< formDataBody [partFileSource "NQuadFile" _p] r
-      return $ case t of
-        Right _r -> A.decode $ responseBody _r
-        Left e   -> Just $
-          A.object ["error" A..= T.pack (show (e :: SomeException))]
+                 =<< formDataBody [partFileSource "NQuadFile" fp] r
+      return $
+        case t of
+          Right b -> A.decode (responseBody b)
+          Left e  -> Just $
+            A.object ["error" A..= T.pack (show (e :: SomeException))]
 
 -- | A valid 'Quad' has its subject, predicate and object not empty.
 isValid :: Quad -> Bool
