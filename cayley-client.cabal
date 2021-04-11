@@ -26,7 +26,7 @@ library
   other-modules:      Database.Cayley.Client.Internal
   other-extensions:   OverloadedStrings
   build-depends:      aeson >= 0.8.0.2 && < 1.6
-                    , attoparsec >= 0.12.1.6 && < 0.14
+                    , attoparsec >= 0.12.1.6 && < 0.15
                     , base >= 4.8.1.0 && < 5
                     , bytestring >= 0.10.6 && < 0.12
                     , binary >= 0.7.5 && < 0.11
