@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Database.Cayley.Client.Internal where
 
 import           Control.Monad.Catch
