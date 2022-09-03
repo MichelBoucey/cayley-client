@@ -23,10 +23,10 @@ instance Show QueryLang where
   show MQL     = "mql"
 
 data CayleyConfig = CayleyConfig
-  { serverPort :: Int
-  , serverName :: String
-  , apiVersion :: APIVersion
-  , queryLang  :: QueryLang
+  { serverPort :: !Int
+  , serverName :: !String
+  , apiVersion :: !APIVersion
+  , queryLang  :: !QueryLang
   } deriving (Show)
 
 -- | CayleyConfig { serverPort = 64210 , serverName = "localhost" , apiVersion = V1 , queryLang  = Gremlin }
@@ -39,8 +39,8 @@ defaultCayleyConfig = CayleyConfig
   }
 
 data CayleyConnection = CayleyConnection
-  { cayleyConfig :: CayleyConfig
-  , manager :: Manager
+  { cayleyConfig :: !CayleyConfig
+  , manager      :: !Manager
   }
 
 data Quad = Quad
