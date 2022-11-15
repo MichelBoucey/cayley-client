@@ -1,5 +1,5 @@
-{-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE RecordWildCards  #-}
 
 module Database.Cayley.Client (
 
