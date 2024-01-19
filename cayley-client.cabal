@@ -38,7 +38,7 @@ library
                     , lens-aeson >= 1.1 && < 1.3
                     , text >= 1.2.2 && < 2.3
                     , transformers >= 0.4.2 && < 0.7
-                    , unordered-containers >= 0.2.5.1 && < 0.3
+                    , unordered-containers >= 0.2.5.1 && < 0.21
                     , vector >= 0.9 && < 0.14
 
   default-language:   Haskell2010
