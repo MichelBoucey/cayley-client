@@ -28,7 +28,7 @@ library
   build-depends:      aeson >= 2 && < 2.3
                     , attoparsec >= 0.12 && < 0.15
                     , base >= 4.8.1.0 && < 5
-                    , bytestring >= 0.10.6 && < 0.12
+                    , bytestring >= 0.10.6 && < 0.13
                     , binary >= 0.7.5 && < 0.13
                     , exceptions >= 0.8.0.2 && < 0.11
                     , http-client >= 0.4.30 && < 0.8
