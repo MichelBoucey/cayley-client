@@ -21,6 +21,7 @@ Source-Repository head
   Location: https://github.com/MichelBoucey/cayley-client.git
 
 library
+  hs-source-dirs:     src/
   exposed-modules:    Database.Cayley.Client
                     , Database.Cayley.Types
   other-modules:      Database.Cayley.Client.Internal
