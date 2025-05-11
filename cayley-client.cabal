@@ -7,14 +7,23 @@ license:             BSD3
 license-file:        LICENSE
 author:              Michel Boucey
 maintainer:          michel.boucey@gmail.com
-copyright:           (c) 2015-2024 - Michel Boucey
+copyright:           (c) 2015-2025 - Michel Boucey
 category:            Database
 build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
                    , tests/testdata.nq
 
-Tested-With: GHC ==8.10.7 || ==9.0.2 || ==9.2.8 || ==9.4.8 || ==9.6.5 || ==9.8.2 || ==9.10.1
+Tested-With:
+  GHC ==8.8.4
+   || ==8.10.7
+   || ==9.0.2
+   || ==9.2.8
+   || ==9.4.8
+   || ==9.6.7
+   || ==9.8.4
+   || ==9.10.2
+   || ==9.12.2
 
 Source-Repository head
   Type: git
